@@ -31,16 +31,16 @@
   <body>
     <div>
       <p>Don't use more than 9 digit. Tab is taking long time and become freeze.</p>
+      <input type="checkbox" id="js-check" name="js-check" checked>
+      <label for="js-check">  Calculate from js code</label><br>
+      <input type="checkbox" id="rust-check" name="rust-check" checked>
+      <label for="rust-check"> Calculate from Rust WASM code</label><br>
+
       <label for="inputBox">Input Number</label>
       <input type="text" id="inputBox" name="inputBox">   
       <button id="compute" onclick="computeValue()">Compute</button>   
     </div>
-    <div>
-      <input type="checkbox" id="js-check" name="js-check" value="Bike">
-      <label for="js-check">  Calculate from js code</label><br>
-      <input type="checkbox" id="rust-check" name="rust-check" value="Car">
-      <label for="rust-check"> Calculate from Rust WASM code</label><br>
-    </div>
+    
     <div>
       <p id="js-result"></p>
       <p id="rust-result"></p>
@@ -116,17 +116,22 @@ pub fn fibonacci(n: i64) -> i64 {
         let n = parseInt(document.getElementById("inputBox").value);
         if (typeof n === 'number') { n= BigInt(n); }
         console.log(typeof n)
+
+        let resRustEle = document.getElementById("rust-result");
+        let resJsEle =document.getElementById("js-result");
+        resJsEle.innerHTML = "JS :=> computing.....";
+        resRustEle.innerHTML = "RUST Wasm :=> computing....";
         if(jsChecked){
           const t0 = performance.now();
           console.log(fibonacciJS(n));
           const t1 = performance.now();
-          document.getElementById("js-result").innerHTML = `JS :=> ${t1 - t0} milliseconds.`;
+          resJsEle.innerHTML = `JS :=> ${t1 - t0} milliseconds.`;
         }
         if(rustChecked){
           const t2 = performance.now();
           console.log(fibonacci(n));
           const t3 = performance.now();
-          document.getElementById("rust-result").innerHTML = `RUST Wasm :=> ${t3 - t2} milliseconds.`;
+          resRustEle.innerHTML = `RUST Wasm :=> ${t3 - t2} milliseconds.`;
         }       
       };
     </script>
