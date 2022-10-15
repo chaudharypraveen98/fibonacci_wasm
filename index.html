@@ -1,19 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  <script type="module">
-    import init,{greet} from "./pkg/fibonacci_wasm.js";
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fibonacci WASM</title>
+    <style>
+      pre[class*="language-"] {
+        position: relative;
+        overflow: auto;
+        margin: 5px 0;
+        padding: 1.75rem 0 1.75rem 1rem;
+        border-radius: 10px;
+      }
+      .code-block{
+        background-color:#242425;
+        color:whitesmoke;
+        border-radius:5px;
+        padding: 10px;
+        text-shadow:#c4c4c4 0 0 2px;
+      }
+      .code-block-container{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        flex-wrap: wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <p>Don't use more than 9 digit. Tab is taking long time and become freeze.</p>
+      <label for="inputBox">Input Number</label>
+      <input type="text" id="inputBox" name="inputBox">   
+      <button id="compute" onclick="computeValue()">Compute</button>   
+    </div>
+    <div>
+      <input type="checkbox" id="js-check" name="js-check" value="Bike">
+      <label for="js-check">  Calculate from js code</label><br>
+      <input type="checkbox" id="rust-check" name="rust-check" value="Car">
+      <label for="rust-check"> Calculate from Rust WASM code</label><br>
+    </div>
+    <div>
+      <p id="js-result"></p>
+      <p id="rust-result"></p>
+    </div>
+    <div class="code-block-container">
+      <div class="code-block">
+        <p>JS Code</p>
+        <pre><code class="language-js">
+function fibonacciJS(num) {
+  if (num == 1) return 0;
+  if (num == 2) return 1;
+  let num1 = 0;
+  let num2 = 1;
+  let i = 2;
+  while (i < num) {
+    const sum = num1 + num2;
+    num1 = num2;
+    num2 = sum;
+    i += 1;
+  }
+  return num2;
+}
+        </code></pre>
+      </div>
+      <div class="code-block">
+        <p>Rust Code</p>
+        <pre><code class="language-rust">
+pub fn fibonacci(n: i64) -> i64 {
+  if n == 0 {
+      return 0;
+  } else if n == 1 {
+      return 1;
+  } else {
+      let mut a = 0;
+      let mut b = 1;
+      for _i in 2..n {
+          let c = a + b;
+          a = b;
+          b = c;
+      }
+      return b;
+  }
+}
+        </code></pre>
+      </div>
+    </div>
 
-    await init();
-    await greet();
+    <script type="module">
+      import init, { fibonacci } from "./pkg/fibonacci_wasm.js";
 
-  </script>
-  
-</body>
+      await init();
+
+      function fibonacciJS(num) {
+        if (num == 1) return 0;
+        if (num == 2) return 1;
+        let num1 = 0;
+        let num2 = 1;
+        let i = 2;
+        while (i < num) {
+          const sum = num1 + num2;
+          num1 = num2;
+          num2 = sum;
+          i += 1;
+        }
+        return num2;
+      }
+      document.getElementById("compute").addEventListener("click", computeValue);
+
+      function computeValue() {
+        let jsChecked = document.getElementById("js-check").checked;
+        let rustChecked = document.getElementById("rust-check").checked;
+        console.log(jsChecked,rustChecked);
+        let n = parseInt(document.getElementById("inputBox").value);
+        if (typeof n === 'number') { n= BigInt(n); }
+        console.log(typeof n)
+        if(jsChecked){
+          const t0 = performance.now();
+          console.log(fibonacciJS(n));
+          const t1 = performance.now();
+          document.getElementById("js-result").innerHTML = `JS :=> ${t1 - t0} milliseconds.`;
+        }
+        if(rustChecked){
+          const t2 = performance.now();
+          console.log(fibonacci(n));
+          const t3 = performance.now();
+          document.getElementById("rust-result").innerHTML = `RUST Wasm :=> ${t3 - t2} milliseconds.`;
+        }       
+      };
+    </script>
+    <script>
+      const copyButtonLabel = "Copy Code";
+      let blocks = document.querySelectorAll("pre");
+
+      blocks.forEach((block) => {
+        // only add button if browser supports Clipboard API
+        if (navigator.clipboard) {
+          let button = document.createElement("button");
+          button.innerText = copyButtonLabel;
+          button.addEventListener("click", copyCode);
+          block.appendChild(button);
+        }
+      });
+
+      async function copyCode(event) {
+        const button = event.srcElement;
+        const pre = button.parentElement;
+        let code = pre.querySelector("code");
+        let text = code.innerText;
+        await navigator.clipboard.writeText(text);
+
+        button.innerText = "Code Copied";
+
+        setTimeout(() => {
+          button.innerText = copyButtonLabel;
+        }, 1000);
+      }
+    </script>
+  </body>
 </html>
