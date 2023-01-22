@@ -38,7 +38,7 @@
 
       <label for="inputBox">Input Number</label>
       <input type="text" id="inputBox" name="inputBox">   
-      <button id="compute" onclick="computeValue()">Compute</button>   
+      <button id="compute">Compute</button>   
     </div>
     
     <div>
@@ -88,10 +88,12 @@ pub fn fibonacci(n: i64) -> i64 {
       </div>
     </div>
 
-    <script type="module">
+    <script type="module" >
       import init, { fibonacci } from "./pkg/fibonacci_wasm.js";
 
       await init();
+      console.log("fibonacci of 9 is",Number
+      (fibonacci(BigInt(parseInt(9+1)))));
 
       function fibonacciJS(num) {
         if (num == 1) return 0;
@@ -107,15 +109,12 @@ pub fn fibonacci(n: i64) -> i64 {
         }
         return num2;
       }
-      document.getElementById("compute").addEventListener("click", computeValue);
-
-      function computeValue() {
+      
+      async function computeValue() {
         let jsChecked = document.getElementById("js-check").checked;
         let rustChecked = document.getElementById("rust-check").checked;
-        console.log(jsChecked,rustChecked);
         let n = parseInt(document.getElementById("inputBox").value);
-        if (typeof n === 'number') { n= BigInt(n); }
-        console.log(typeof n)
+        if (typeof n === 'number') { n= BigInt(n+1); }
 
         let resRustEle = document.getElementById("rust-result");
         let resJsEle =document.getElementById("js-result");
@@ -123,17 +122,18 @@ pub fn fibonacci(n: i64) -> i64 {
         resRustEle.innerHTML = "RUST Wasm :=> computing....";
         if(jsChecked){
           const t0 = performance.now();
-          console.log(fibonacciJS(n));
+          const ans = await fibonacciJS(n);
           const t1 = performance.now();
-          resJsEle.innerHTML = `JS :=> ${t1 - t0} milliseconds.`;
+          resJsEle.innerHTML = `JS :=> ${t1 - t0} milliseconds and computed value is ${ans}`;
         }
         if(rustChecked){
           const t2 = performance.now();
-          console.log(fibonacci(n));
+          const ans = await fibonacci(n);
           const t3 = performance.now();
-          resRustEle.innerHTML = `RUST Wasm :=> ${t3 - t2} milliseconds.`;
+          resRustEle.innerHTML = `RUST Wasm :=> ${t3 - t2} milliseconds and computed value is ${Number(ans)}`;
         }       
       };
+      document.getElementById("compute").addEventListener("click", computeValue);
     </script>
     <script>
       const copyButtonLabel = "Copy Code";
